@@ -56,9 +56,9 @@ void ButtonGroup::_pressed(Object *p_button) {
 	BaseButton *b=p_button->cast_to<BaseButton>();
 	ERR_FAIL_COND(!b);
 
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+  for (auto element : buttons) {
 
-		BaseButton *bb=E->get();
+		BaseButton *bb=element;
 		bb->set_pressed( b==bb );
 	}
 }
@@ -82,18 +82,18 @@ Array ButtonGroup::_get_button_list() const {
 
 void ButtonGroup::get_button_list(List<BaseButton*> *p_buttons) const {
 
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+  for (auto element : buttons) {
 
-		p_buttons->push_back(E->get());
-	}
+    p_buttons->push_back(element);
+  }
 }
 
 BaseButton *ButtonGroup::get_pressed_button() const {
 
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+  for (auto element : buttons) {
 
-		if (E->get()->is_pressed())
-			return E->get();
+		if (element->is_pressed())
+			return element;
 	}
 
 	return NULL;
@@ -101,10 +101,10 @@ BaseButton *ButtonGroup::get_pressed_button() const {
 
 BaseButton *ButtonGroup::get_focused_button() const{
 
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+  for (auto element : buttons) {
 
-		if (E->get()->has_focus())
-			return E->get();
+		if (element->has_focus())
+			return element;
 	}
 
 	return NULL;
@@ -121,9 +121,9 @@ int ButtonGroup::get_pressed_button_index() const {
 		return -1;
 
 	List<BaseButton*> blist;
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+	for(std::set<BaseButton*>::iterator it = buttons.begin(); it != buttons.end(); ++it) {
 
-		blist.push_back(E->get());
+		blist.push_back(*it);
 
 	}
 

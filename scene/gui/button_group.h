@@ -29,6 +29,8 @@
 #ifndef BUTTON_GROUP_H
 #define BUTTON_GROUP_H
 
+#include <set>
+
 #include "scene/gui/control.h"
 
 
@@ -39,7 +41,7 @@ class ButtonGroup : public Control {
 	OBJ_TYPE(ButtonGroup,Control);
 
 
-	Set<BaseButton*> buttons;
+  std::set<BaseButton*> buttons;
 
 
 	Array _get_button_list() const;
