@@ -26,6 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#include <set>
+
 #include "globals.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
@@ -189,7 +192,7 @@ void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
 	const String *k=NULL;
-	Set<_VCSort> vclist;
+  std::set<_VCSort> vclist;
 	
 	while ((k=props.next(k))) {
 		
@@ -214,15 +217,15 @@ void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
 		vclist.insert(vc);
 	}
 
-	for(Set<_VCSort>::Element *E=vclist.front();E;E=E->next()) {
+  for(auto& element : vclist) {
 
-		if (custom_prop_info.has(E->get().name)) {
-			PropertyInfo pi=custom_prop_info[E->get().name];
-			pi.name=E->get().name;
-			pi.usage=E->get().flags;
+		if (custom_prop_info.has(element.name)) {
+			PropertyInfo pi=custom_prop_info[element.name];
+			pi.name=element.name;
+			pi.usage=element.flags;
 			p_list->push_back( pi );
 		} else
-			p_list->push_back( PropertyInfo(E->get().type, E->get().name,PROPERTY_HINT_NONE,"",E->get().flags) );
+			p_list->push_back( PropertyInfo(element.type, element.name,PROPERTY_HINT_NONE,"",element.flags) );
 	}
 }
 
@@ -1135,7 +1138,7 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 	ERR_FAIL_COND_V(p_path=="",ERR_INVALID_PARAMETER);
 
 	const String *k=NULL;
-	Set<_VCSort> vclist;
+  std::set<_VCSort> vclist;
 
 	while ((k=props.next(k))) {
 
@@ -1184,11 +1187,11 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 	}
 
 	Map<String,List<String> > props;
+  
+  for(auto& element : vclist) {
 
-	for(Set<_VCSort>::Element *E=vclist.front();E;E=E->next()) {
-
-		String category = E->get().name;
-		String name = E->get().name;
+		String category = element.name;
+		String name = element.name;
 
 		int div = category.find("/");
 
