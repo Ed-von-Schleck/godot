@@ -1,11 +1,11 @@
 
 import os
-import sys	
+import sys
 
 
 def is_active():
 	return True
-        
+
 def get_name():
         return "X11"
 
@@ -19,11 +19,11 @@ def can_build():
 		return False # no x11 on mac for now
 
 	errorval=os.system("pkg-config --version > /dev/null")
-	
+
 	if (errorval):
 		print("pkg-config not found.. x11 disabled.")
 		return False
-	
+
 	x11_error=os.system("pkg-config x11 --modversion > /dev/null ")
 	if (x11_error):
 		print("X11 not found.. x11 disabled.")
@@ -33,9 +33,9 @@ def can_build():
 	if (x11_error):
 		print("xcursor not found.. x11 disabled.")
 		return False
-	
+
 	return True # X11 enabled
-  
+
 def get_opts():
 
 	return [
@@ -43,7 +43,7 @@ def get_opts():
 	('use_sanitizer','Use llvm compiler sanitize address','no'),
 	('force_32_bits','Force 32 bits binary','no')
 	]
-  
+
 def get_flags():
 
 	return [
@@ -51,7 +51,7 @@ def get_flags():
 	('legacygl', 'yes'),
 	('builtin_zlib', 'no'),
 	]
-			
+
 
 
 def configure(env):
@@ -74,29 +74,29 @@ def configure(env):
 
 
 	if (env["target"]=="release"):
-		
-		env.Append(CCFLAGS=['-O2','-ffast-math','-fomit-frame-pointer'])
+
+		env.Append(CCFLAGS=['-O2','-ffast-math','-fomit-frame-pointer', '-std=c++11'])
 		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
 		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="release_debug"):
 
-		env.Append(CCFLAGS=['-O2','-ffast-math','-DDEBUG_ENABLED'])
+		env.Append(CCFLAGS=['-O2','-ffast-math','-DDEBUG_ENABLED', '-std=c++11'])
 		env['OBJSUFFIX'] = "_optd"+env['OBJSUFFIX']
 		env['LIBSUFFIX'] = "_optd"+env['LIBSUFFIX']
 
 
 #		env.Append(CCFLAGS=['-Os','-ffast-math','-fomit-frame-pointer'])
-#does not seem to have much effect		
+#does not seem to have much effect
 #		env.Append(CCFLAGS=['-fno-default-inline'])
 #recommended by wxwidgets
 #		env.Append(CCFLAGS=['-ffunction-sections','-fdata-sections'])
 #		env.Append(LINKFLAGS=['-Wl','--gc-sections'])
 
 	elif (env["target"]=="debug"):
-				
-		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
-#does not seem to have much effect		
+
+		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED', '-std=c++11'])
+#does not seem to have much effect
 #		env.Append(CCFLAGS=['-fno-default-inline'])
 #recommended by wxwidgets
 #		env.Append(CCFLAGS=['-ffunction-sections','-fdata-sections'])
@@ -104,13 +104,13 @@ def configure(env):
 
 	elif (env["target"]=="debug_light"):
 
-		env.Append(CCFLAGS=['-g1', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
+		env.Append(CCFLAGS=['-g1', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED', '-std=c++11'])
 
 
 	elif (env["target"]=="profile"):
-		
-		env.Append(CCFLAGS=['-g','-pg'])
-		env.Append(LINKFLAGS=['-pg'])		
+
+		env.Append(CCFLAGS=['-g','-pg', '-std=c++11'])
+		env.Append(LINKFLAGS=['-pg'])
 
 	env.ParseConfig('pkg-config x11 --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
@@ -119,7 +119,7 @@ def configure(env):
 	env.ParseConfig('pkg-config freetype2 --cflags --libs')
 	env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
 
-	
+
 	if env['opengl'] == 'yes':
                 env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
 	#env.Append(CPPFLAGS=["-DRTAUDIO_ENABLED"])
