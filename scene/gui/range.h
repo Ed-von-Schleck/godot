@@ -29,6 +29,8 @@
 #ifndef RANGE_H
 #define RANGE_H
 
+#include <set>
+
 #include "scene/gui/control.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -42,7 +44,7 @@ class Range : public Control {
 		double val,min,max;
 		double step,page;
 		bool exp_unit_value;
-		Set<Range*> owners;
+    std::set<Range*> owners;
 		void emit_value_changed();
 		void emit_changed();
 	};

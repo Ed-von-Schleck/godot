@@ -26,6 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#include <set>
+
 #include "node.h"
 #include "print_string.h"
 #include "scene/io/scene_loader.h"
@@ -871,7 +874,7 @@ NodePath Node::get_path_to(const Node *p_node) const {
 	if (this==p_node)
 		return NodePath(".");
 	
-	Set<const Node*> visited;
+  std::set<const Node*> visited;
 	
 	const Node *n=this;
 	
@@ -885,7 +888,7 @@ NodePath Node::get_path_to(const Node *p_node) const {
 	
 	while(common_parent) {
 	
-		if (visited.has(common_parent))
+		if (visited.find(common_parent) != visited.end())
 			break;
 		common_parent=common_parent->data.parent;
 	}

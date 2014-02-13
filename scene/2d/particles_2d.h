@@ -29,6 +29,8 @@
 #ifndef PARTICLES_FRAME_H
 #define PARTICLES_FRAME_H
 
+#include <set>
+
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
 
@@ -160,7 +162,7 @@ private:
 	void _process_particles(float p_delta);
 friend class ParticleAttractor2D;
 
-	Set<ParticleAttractor2D*> attractors;
+  std::set<ParticleAttractor2D*> attractors;
 
 protected:
 

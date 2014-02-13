@@ -26,6 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#include <set>
+
 #include "grid_container.h"
 
 
@@ -37,8 +40,8 @@ void GridContainer::_notification(int p_what) {
 
 			Map<int,int> col_minw;
 			Map<int,int> row_minh;
-			Set<int> col_expanded;
-			Set<int> row_expanded;
+      std::set<int> col_expanded;
+      std::set<int> row_expanded;
 
 			int sep=get_constant("separation");
 
@@ -86,13 +89,13 @@ void GridContainer::_notification(int p_what) {
 
 			for (Map<int,int>::Element *E=col_minw.front();E;E=E->next()) {
 				ms.width+=E->get();
-				if (col_expanded.has(E->key()))
+				if (col_expanded.find(E->key()) != col_expanded.end())
 					expand_cols++;
 			}
 
 			for (Map<int,int>::Element *E=row_minh.front();E;E=E->next()) {
 				ms.height+=E->get();
-				if (row_expanded.has(E->key()))
+				if (row_expanded.find(E->key()) != row_expanded.end())
 					expand_rows++;
 			}
 
@@ -118,7 +121,7 @@ void GridContainer::_notification(int p_what) {
 				if (col==0) {
 					col_ofs=0;
 					if (row>0 && row_minh.has(row-1))
-						row_ofs+=row_minh[row-1]+sep+(row_expanded.has(row-1)?row_expand:0);
+						row_ofs+=row_minh[row-1]+sep+((row_expanded.find(row-1) != row_expanded.end()) ? row_expand : 0);
 				}
 
 				if (c->is_visible()) {
@@ -128,9 +131,9 @@ void GridContainer::_notification(int p_what) {
 					if (row_minh.has(row))
 						s.height=row_minh[col];
 
-					if (row_expanded.has(row))
+					if (row_expanded.find(row) != row_expanded.end())
 						s.height+=row_expand;
-					if (col_expanded.has(col))
+					if (col_expanded.find(col) != col_expanded.end())
 						s.width+=col_expand;
 
 					Point2 p(col_ofs,row_ofs);
@@ -140,7 +143,7 @@ void GridContainer::_notification(int p_what) {
 				}
 
 				if (col_minw.has(col)) {
-					col_ofs+=col_minw[col]+sep+(col_expanded.has(col)?col_expand:0);
+					col_ofs+=col_minw[col]+sep+((col_expanded.find(col) != col_expanded.end()) ? col_expand : 0);
 				}
 
 				idx++;

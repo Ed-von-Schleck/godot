@@ -288,10 +288,11 @@ void Particles2D::_process_particles(float p_delta) {
 		if (local_space) {
 			m= get_global_transform().affine_inverse();
 		}
-		for (Set<ParticleAttractor2D*>::Element *E=attractors.front();E;E=E->next()) {
 
-			attractor_cache[idx].pos=m.xform( E->get()->get_global_pos() );
-			attractor_cache[idx].attractor=E->get();
+    for(auto element : attractors) {
+
+			attractor_cache[idx].pos=m.xform( element->get_global_pos() );
+			attractor_cache[idx].attractor=element;
 			idx++;
 		}
 

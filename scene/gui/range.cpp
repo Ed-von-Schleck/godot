@@ -40,8 +40,8 @@ void Range::_value_changed_notify() {
 
 void Range::Shared::emit_value_changed() {
 
-	for (Set<Range*>::Element *E=owners.front();E;E=E->next()) {
-		Range *r=E->get();
+  for(auto element : owners) {
+		Range *r=element;
 		if (!r->is_inside_scene())
 			continue;
 		r->_value_changed_notify();
@@ -57,8 +57,8 @@ void Range::_changed_notify() {
 
 void Range::Shared::emit_changed() {
 
-	for (Set<Range*>::Element *E=owners.front();E;E=E->next()) {
-		Range *r=E->get();
+  for(auto element : owners) {
+		Range *r=element;
 		if (!r->is_inside_scene())
 			continue;
 		r->_changed_notify();
