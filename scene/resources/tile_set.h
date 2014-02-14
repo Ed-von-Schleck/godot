@@ -29,6 +29,8 @@
 #ifndef TILE_SET_H
 #define TILE_SET_H
 
+#include <map>
+
 #include "resource.h"
 #include "scene/resources/shape_2d.h"
 #include "scene/resources/texture.h"
@@ -46,7 +48,7 @@ class TileSet : public Resource {
 		Vector<Ref<Shape2D> > shapes;
 	};
 
-	Map<int,Data> tile_map;
+  std::map<int,Data> tile_map;
 
 
 protected:

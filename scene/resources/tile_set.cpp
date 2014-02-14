@@ -36,7 +36,7 @@ bool TileSet::_set(const StringName& p_name, const Variant& p_value) {
 		return false;
 	int id = String::to_int(n.c_str(),slash);
 
-	if (!tile_map.has(id))
+	if (tile_map.find(id) == tile_map.end())
 		create_tile(id);
 	String what = n.substr(slash+1,n.length());
 
@@ -67,7 +67,7 @@ bool TileSet::_get(const StringName& p_name,Variant &r_ret) const{
 		return false;
 	int id = String::to_int(n.c_str(),slash);
 
-	ERR_FAIL_COND_V(!tile_map.has(id),false);
+	ERR_FAIL_COND_V(tile_map.find(id) == tile_map.end(),false);
 
 	String what = n.substr(slash+1,n.length());
 
@@ -92,9 +92,9 @@ bool TileSet::_get(const StringName& p_name,Variant &r_ret) const{
 
 void TileSet::_get_property_list( List<PropertyInfo> *p_list) const{
 
-	for(Map<int,Data>::Element *E=tile_map.front();E;E=E->next()) {
+  for(auto& element : tile_map) {
 
-		int id = E->key();
+		int id = element.first;
 		String pre = itos(id)+"/";
 		p_list->push_back(PropertyInfo(Variant::STRING,pre+"name"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"));
@@ -107,8 +107,9 @@ void TileSet::_get_property_list( List<PropertyInfo> *p_list) const{
 
 void TileSet::create_tile(int p_id) {
 
-	ERR_FAIL_COND( tile_map.has(p_id) );
-	tile_map[p_id]=Data();
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND(iter != tile_map.end());
+	iter->second=Data();
 	_change_notify("");
 	emit_changed();
 
@@ -116,76 +117,86 @@ void TileSet::create_tile(int p_id) {
 
 void TileSet::tile_set_texture(int p_id,const Ref<Texture> &p_texture) {
 
-	ERR_FAIL_COND(!tile_map.has(p_id));
-	tile_map[p_id].texture=p_texture;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND(iter == tile_map.end());
+	iter->second.texture=p_texture;
 	emit_changed();
 
 }
 
 Ref<Texture> TileSet::tile_get_texture(int p_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id),Ref<Texture>());
-	return tile_map[p_id].texture;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND_V(iter == tile_map.end(),Ref<Texture>());
+	return iter->second.texture;
 
 }
 
 void TileSet::tile_set_offset(int p_id,const Vector2 &p_offset) {
 
-	ERR_FAIL_COND(!tile_map.has(p_id));
-	tile_map[p_id].offset=p_offset;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND(iter == tile_map.end());
+	iter->second.offset=p_offset;
 	emit_changed();
 }
 
 Vector2 TileSet::tile_get_offset(int p_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id),Vector2());
-	return tile_map[p_id].offset;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND_V(iter == tile_map.end(),Vector2());
+	return iter->second.offset;
 
 }
 
 void TileSet::tile_set_region(int p_id,const Rect2 &p_region) {
 
-	ERR_FAIL_COND(!tile_map.has(p_id));
-	tile_map[p_id].region=p_region;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND(iter == tile_map.end());
+	iter->second.region=p_region;
 	emit_changed();
 }
 
 Rect2 TileSet::tile_get_region(int p_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id),Rect2());
-	return tile_map[p_id].region;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND_V(iter == tile_map.end(),Rect2());
+	return iter->second.region;
 
 }
 
 
 void TileSet::tile_set_name(int p_id,const String &p_name) {
 
-	ERR_FAIL_COND(!tile_map.has(p_id));
-	tile_map[p_id].name=p_name;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND(iter == tile_map.end());
+	iter->second.name=p_name;
 	emit_changed();
 }
 
 String TileSet::tile_get_name(int p_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id),String());
-	return tile_map[p_id].name;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND_V(iter == tile_map.end(),String());
+	return iter->second.name;
 
 }
 
 void TileSet::tile_set_shape(int p_id,const Ref<Shape2D> &p_shape) {
 
-	ERR_FAIL_COND(!tile_map.has(p_id));
-	tile_map[p_id].shapes.resize(1);
-	tile_map[p_id].shapes[0]=p_shape;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND(iter == tile_map.end());
+	iter->second.shapes.resize(1);
+	iter->second.shapes[0]=p_shape;
 	emit_changed();
 
 }
 
 Ref<Shape2D> TileSet::tile_get_shape(int p_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id),Ref<Shape2D>());
-	if (tile_map[p_id].shapes.size()>0)
-		return tile_map[p_id].shapes[0];
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND_V(iter == tile_map.end(),Ref<Shape2D>());
+	if (iter->second.shapes.size()>0)
+		return iter->second.shapes[0];
 
 	return Ref<Shape2D>();
 
@@ -193,21 +204,24 @@ Ref<Shape2D> TileSet::tile_get_shape(int p_id) const {
 
 void TileSet::tile_set_shapes(int p_id,const Vector<Ref<Shape2D> > &p_shapes) {
 
-	ERR_FAIL_COND(!tile_map.has(p_id));
-	tile_map[p_id].shapes=p_shapes;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND(iter == tile_map.end());
+	iter->second.shapes=p_shapes;
 	emit_changed();
 
 }
 
 Vector<Ref<Shape2D> > TileSet::tile_get_shapes(int p_id) const {
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id),Vector<Ref<Shape2D> >());
-	return tile_map[p_id].shapes;
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND_V(iter == tile_map.end(),Vector<Ref<Shape2D> >());
+	return iter->second.shapes;
 }
 
 void TileSet::_tile_set_shapes(int p_id,const Array& p_shapes) {
 
-	ERR_FAIL_COND(!tile_map.has(p_id));
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND(iter == tile_map.end());
 	Vector<Ref<Shape2D> > shapes;
 	for(int i=0;i<p_shapes.size();i++) {
 
@@ -221,10 +235,11 @@ void TileSet::_tile_set_shapes(int p_id,const Array& p_shapes) {
 
 Array TileSet::_tile_get_shapes(int p_id) const{
 
-	ERR_FAIL_COND_V(!tile_map.has(p_id),Array());
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND_V(iter == tile_map.end(),Array());
 	Array arr;
 
-	Vector<Ref<Shape2D> >shp = tile_map[p_id].shapes;
+	Vector<Ref<Shape2D> >shp = iter->second.shapes;
 	for(int i=0;i<shp.size();i++)
 		arr.push_back(shp[i]);
 
@@ -233,31 +248,31 @@ Array TileSet::_tile_get_shapes(int p_id) const{
 
 void TileSet::get_tile_list(List<int> *p_tiles) const {
 
-	for(Map<int,Data>::Element *E=tile_map.front();E;E=E->next()) {
+  for(auto& element : tile_map) {
 
-		p_tiles->push_back(E->key());
+		p_tiles->push_back(element.first);
 	}
 
 }
 
 bool TileSet::has_tile(int p_id) const {
 
-	return tile_map.has(p_id);
+	return tile_map.find(p_id) != tile_map.end();
 }
 
 void TileSet::remove_tile(int p_id) {
 
-	ERR_FAIL_COND(!tile_map.has(p_id));
-	tile_map.erase(p_id);
+  auto iter = tile_map.find(p_id);
+	ERR_FAIL_COND(iter == tile_map.end());
+	tile_map.erase(iter);
 	_change_notify("");
 	emit_changed();
 }
 
 int TileSet::get_last_unused_tile_id() const {
 
-
-	if (tile_map.size())
-		return tile_map.back()->key()+1;
+	if (!tile_map.empty())
+		return tile_map.end()->first + 1;
 	else
 		return 0;
 
@@ -265,11 +280,10 @@ int TileSet::get_last_unused_tile_id() const {
 
 int TileSet::find_tile_by_name(const String& p_name) const {
 
+  for(auto& element : tile_map) {
 
-	for(Map<int,Data>::Element *E=tile_map.front();E;E=E->next()) {
-
-		if (p_name==E->get().name)
-			return E->key();
+		if (p_name==element.second.name)
+			return element.first;
 	}
 	return -1;
 }
@@ -282,7 +296,6 @@ void TileSet::clear() {
 }
 
 void TileSet::_bind_methods() {
-
 
 	ObjectTypeDB::bind_method(_MD("create_tile","id"),&TileSet::create_tile);
 	ObjectTypeDB::bind_method(_MD("tile_set_name","id","name"),&TileSet::tile_set_name);
