@@ -29,6 +29,8 @@
 #ifndef GRID_THEME_H
 #define GRID_THEME_H
 
+#include <map>
+
 #include "resource.h"
 #include "mesh.h"
 #include "shape.h"
@@ -47,7 +49,7 @@ class MeshLibrary : public Resource {
 		Ref<Texture> preview;
 	};
 
-	Map<int,Item> item_map;
+  std::map<int,Item> item_map;
 
 protected:
 

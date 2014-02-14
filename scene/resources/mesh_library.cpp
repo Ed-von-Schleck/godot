@@ -37,7 +37,7 @@ bool MeshLibrary::_set(const StringName& p_name, const Variant& p_value) {
 
 		int idx = name.get_slice("/",1).to_int();
 		String what = name.get_slice("/",2);
-		if (!item_map.has(idx))
+		if (item_map.find(idx) == item_map.end())
 			create_item(idx);
 
 		if(what=="name")
@@ -61,7 +61,7 @@ bool MeshLibrary::_get(const StringName& p_name,Variant &r_ret) const {
 
 	String name=p_name;
 	int idx = name.get_slice("/",1).to_int();
-	ERR_FAIL_COND_V(!item_map.has(idx),false);
+	ERR_FAIL_COND_V(item_map.find(idx) == item_map.end(), false);
 	String what = name.get_slice("/",2);
 
 	if(what=="name")
@@ -80,9 +80,9 @@ bool MeshLibrary::_get(const StringName& p_name,Variant &r_ret) const {
 
 void MeshLibrary::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	for(Map<int,Item>::Element *E=item_map.front();E;E=E->next()) {
+  for(auto& element : item_map) {
 
-		String name="item/"+itos(E->key())+"/";
+		String name="item/"+itos(element.first)+"/";
 		p_list->push_back( PropertyInfo(Variant::STRING,name+"name"));
 		p_list->push_back( PropertyInfo(Variant::OBJECT,name+"mesh",PROPERTY_HINT_RESOURCE_TYPE,"Mesh"));
 		p_list->push_back( PropertyInfo(Variant::OBJECT,name+"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape"));
@@ -94,24 +94,27 @@ void MeshLibrary::_get_property_list( List<PropertyInfo> *p_list) const {
 
 void MeshLibrary::create_item(int p_item) {
 
+  auto iter = item_map.find(p_item);
 	ERR_FAIL_COND(p_item<0);
-	ERR_FAIL_COND(item_map.has(p_item));
+	ERR_FAIL_COND(iter != item_map.end());
 	item_map[p_item]=Item();
 	_change_notify();
 }
 
 void MeshLibrary::set_item_name(int p_item,const String& p_name) {
 
-	ERR_FAIL_COND(!item_map.has(p_item));
-	item_map[p_item].name=p_name;	
+  auto iter = item_map.find(p_item);
+	ERR_FAIL_COND(iter == item_map.end());
+	iter->second.name=p_name;	
 	emit_changed();
 	_change_notify();
 
 }
 void MeshLibrary::set_item_mesh(int p_item,const Ref<Mesh>& p_mesh) {
 
-	ERR_FAIL_COND(!item_map.has(p_item));
-	item_map[p_item].mesh=p_mesh;
+  auto iter = item_map.find(p_item);
+	ERR_FAIL_COND(iter == item_map.end());
+	iter->second.mesh=p_mesh;
 	notify_change_to_owners();
 	emit_changed();
 	_change_notify();
@@ -121,7 +124,7 @@ void MeshLibrary::set_item_mesh(int p_item,const Ref<Mesh>& p_mesh) {
 
 void MeshLibrary::set_item_shape(int p_item,const Ref<Shape>& p_shape) {
 
-	ERR_FAIL_COND(!item_map.has(p_item));
+	ERR_FAIL_COND(item_map.find(p_item) == item_map.end());
 	item_map[p_item].shape=p_shape;
 	_change_notify();
 	notify_change_to_owners();
@@ -132,45 +135,51 @@ void MeshLibrary::set_item_shape(int p_item,const Ref<Shape>& p_shape) {
 
 void MeshLibrary::set_item_preview(int p_item,const Ref<Texture>& p_preview) {
 
-	ERR_FAIL_COND(!item_map.has(p_item));
-	item_map[p_item].preview=p_preview;
+  auto iter = item_map.find(p_item);
+	ERR_FAIL_COND(iter == item_map.end());
+	iter->second.preview=p_preview;
 	emit_changed();
 	_change_notify();
 
 }
 String MeshLibrary::get_item_name(int p_item) const {
 
-	ERR_FAIL_COND_V(!item_map.has(p_item),"");
-	return item_map[p_item].name;
+  auto iter = item_map.find(p_item);
+	ERR_FAIL_COND_V(iter == item_map.end(),"");
+	return iter->second.name;
 
 }
 Ref<Mesh> MeshLibrary::get_item_mesh(int p_item) const {
 
-	ERR_FAIL_COND_V(!item_map.has(p_item),Ref<Mesh>());
-	return item_map[p_item].mesh;
+  auto iter = item_map.find(p_item);
+	ERR_FAIL_COND_V(iter == item_map.end(),Ref<Mesh>());
+	return iter->second.mesh;
 
 }
 
 Ref<Shape> MeshLibrary::get_item_shape(int p_item) const {
 
-	ERR_FAIL_COND_V(!item_map.has(p_item),Ref<Shape>());
-	return item_map[p_item].shape;
+  auto iter = item_map.find(p_item);
+	ERR_FAIL_COND_V(iter == item_map.end(),Ref<Shape>());
+	return iter->second.shape;
 }
 
 Ref<Texture> MeshLibrary::get_item_preview(int p_item) const {
 
-	ERR_FAIL_COND_V(!item_map.has(p_item),Ref<Texture>());
-	return item_map[p_item].preview;
+  auto iter = item_map.find(p_item);
+	ERR_FAIL_COND_V(iter == item_map.end(),Ref<Texture>());
+	return iter->second.preview;
 }
 
 bool MeshLibrary::has_item(int p_item) const {
 
-	return item_map.has(p_item)	;
+	return item_map.find(p_item) != item_map.end();
 }
 void MeshLibrary::remove_item(int p_item) {
 
-	ERR_FAIL_COND(!item_map.has(p_item));
-	item_map.erase(p_item);
+  auto iter = item_map.find(p_item);
+	ERR_FAIL_COND(iter == item_map.end());
+	item_map.erase(iter);
 	notify_change_to_owners();
 	_change_notify();
 	emit_changed();
@@ -190,9 +199,10 @@ Vector<int> MeshLibrary::get_item_list() const {
 	Vector<int> ret;
 	ret.resize(item_map.size());
 	int idx=0;
-	for(Map<int,Item>::Element *E=item_map.front();E;E=E->next()) {
+	//for(Map<int,Item>::Element *E=item_map.front();E;E=E->next()) {
+  for(auto& element : item_map) {
 
-		ret[idx++]=E->key();
+		ret[idx++] = element.first;
 	}
 
 	return ret;
@@ -200,20 +210,20 @@ Vector<int> MeshLibrary::get_item_list() const {
 
 int MeshLibrary::find_item_name(const String& p_name) const {
 
-	for(Map<int,Item>::Element *E=item_map.front();E;E=E->next()) {
+  for(auto& element : item_map) {
 
-		if (E->get().name==p_name)
-			return E->key();
+		if (element.second.name==p_name)
+			return element.first;
 	}
 	return -1;
 }
 
 int MeshLibrary::get_last_unused_item_id() const {
 
-	if (!item_map.size())
+	if (item_map.empty())
 		return 0;
 	else
-		return item_map.back()->key()+1;
+		return item_map.end()->first + 1;
 }
 
 
