@@ -93,22 +93,24 @@ real_t Area::get_priority() const{
 	return priority;
 }
 
-
 void Area::_body_enter_scene(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
 	ERR_FAIL_COND(!node);
 
-	Map<ObjectID,BodyState>::Element *E=body_map.find(p_id);
-	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(E->get().in_scene);
+  auto iter = body_map.find(p_id);
+	ERR_FAIL_COND(iter == body_map.end());
 
-	E->get().in_scene=true;
+  auto& element = iter->second;
+	ERR_FAIL_COND(element.in_scene);
+
+	element.in_scene=true;
 	emit_signal(SceneStringNames::get_singleton()->body_enter,node);
-	for(int i=0;i<E->get().shapes.size();i++) {
 
-		emit_signal(SceneStringNames::get_singleton()->body_enter_shape,p_id,node,E->get().shapes[i].body_shape,E->get().shapes[i].area_shape);
+	for(int i=0;i<element.shapes.size();i++) {
+
+		emit_signal(SceneStringNames::get_singleton()->body_enter_shape,p_id,node,element.shapes[i].body_shape,element.shapes[i].area_shape);
 	}
 
 }
@@ -118,14 +120,18 @@ void Area::_body_exit_scene(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
 	ERR_FAIL_COND(!node);
-	Map<ObjectID,BodyState>::Element *E=body_map.find(p_id);
-	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(!E->get().in_scene);
-	E->get().in_scene=false;
-	emit_signal(SceneStringNames::get_singleton()->body_exit,node);
-	for(int i=0;i<E->get().shapes.size();i++) {
 
-		emit_signal(SceneStringNames::get_singleton()->body_exit_shape,p_id,node,E->get().shapes[i].body_shape,E->get().shapes[i].area_shape);
+  auto iter = body_map.find(p_id);
+	ERR_FAIL_COND(iter == body_map.end());
+
+  auto& element = iter->second;
+	ERR_FAIL_COND(element.in_scene);
+
+	element.in_scene=false;
+	emit_signal(SceneStringNames::get_singleton()->body_exit,node);
+	for(int i=0;i<element.shapes.size();i++) {
+
+		emit_signal(SceneStringNames::get_singleton()->body_exit_shape,p_id,node,element.shapes[i].body_shape,element.shapes[i].area_shape);
 	}
 
 }
@@ -138,49 +144,51 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
 
-	Map<ObjectID,BodyState>::Element *E=body_map.find(objid);
+  auto iter = body_map.find(objid);
+  auto& element = iter->second;
 
-	ERR_FAIL_COND(!body_in && !E);
+	ERR_FAIL_COND(!body_in && (iter == body_map.end()));
 
 	if (body_in) {
-		if (!E) {
+		if (iter == body_map.end()) {
 
-			E = body_map.insert(objid,BodyState());
-			E->get().rc=0;
-			E->get().in_scene=node && node->is_inside_scene();
+			iter = body_map.insert(std::make_pair(objid,BodyState())).first;
+      element = iter->second;
+			element.rc=0;
+			element.in_scene=node && node->is_inside_scene();
 			if (node) {
 				node->connect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene,make_binds(objid));
 				node->connect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene,make_binds(objid));
-				if (E->get().in_scene) {
+				if (element.in_scene) {
 					emit_signal(SceneStringNames::get_singleton()->body_enter,node);
 				}
 			}
 
 		}
-		E->get().rc++;
+		element.rc++;
 		if (node)
-			E->get().shapes.insert(ShapePair(p_body_shape,p_area_shape));
+			element.shapes.insert(ShapePair(p_body_shape,p_area_shape));
 
 
-		if (E->get().in_scene) {
+		if (element.in_scene) {
 			emit_signal(SceneStringNames::get_singleton()->body_enter_shape,objid,node,p_body_shape,p_area_shape);
 		}
 
 	} else {
 
-		E->get().rc--;
+		element.rc--;
 
 		if (node)
-			E->get().shapes.erase(ShapePair(p_body_shape,p_area_shape));
+			element.shapes.erase(ShapePair(p_body_shape,p_area_shape));
 
 		bool eraseit=false;
 
-		if (E->get().rc==0) {
+		if (element.rc==0) {
 
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene);
 				node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene);
-				if (E->get().in_scene)
+				if (element.in_scene)
 					emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
 
 			}
@@ -188,12 +196,12 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 			eraseit=true;
 
 		}
-		if (node && E->get().in_scene) {
+		if (node && element.in_scene) {
 			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,objid,obj,p_body_shape,p_area_shape);
 		}
 
 		if (eraseit)
-			body_map.erase(E);
+			body_map.erase(iter);
 
 	}
 
@@ -202,21 +210,23 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 
 void Area::_clear_monitoring() {
 
-	Map<ObjectID,BodyState> bmcopy = body_map;
+  std::map<ObjectID,BodyState> bmcopy = body_map;
 	body_map.clear();
 	//disconnect all monitored stuff
 
-	for (Map<ObjectID,BodyState>::Element *E=bmcopy.front();E;E=E->next()) {
+  for(auto& kv : bmcopy) {
+    auto& key = kv.first;
+    auto& element = kv.second;
 
-		Object *obj = ObjectDB::get_instance(E->key());
+		Object *obj = ObjectDB::get_instance(key);
 		Node *node = obj ? obj->cast_to<Node>() : NULL;
 		ERR_CONTINUE(!node);
-		if (!E->get().in_scene)
+		if (!element.in_scene)
 			continue;
 
-		for(int i=0;i<E->get().shapes.size();i++) {
+		for(int i=0;i<element.shapes.size();i++) {
 
-			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,E->key(),node,E->get().shapes[i].body_shape,E->get().shapes[i].area_shape);
+			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,key,node,element.shapes[i].body_shape,element.shapes[i].area_shape);
 		}
 
 		emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
