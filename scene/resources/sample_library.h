@@ -29,9 +29,10 @@
 #ifndef SAMPLE_LIBRARY_H
 #define SAMPLE_LIBRARY_H
 
+#include <map>
+
 #include "resource.h"
 #include "scene/resources/sample.h"
-#include "map.h"
 
 class SampleLibrary : public Resource {
 
@@ -46,7 +47,7 @@ class SampleLibrary : public Resource {
 		SampleData() { db=0; pitch_scale=1; }
 	};
 
-	Map<StringName,SampleData > sample_map;
+  std::map<StringName,SampleData > sample_map;
 protected:
 
 	bool _set(const StringName& p_name, const Variant& p_value);

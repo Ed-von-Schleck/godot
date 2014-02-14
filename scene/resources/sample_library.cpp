@@ -67,11 +67,12 @@ bool SampleLibrary::_get(const StringName& p_name,Variant &r_ret) const {
 	if (String(p_name).begins_with("samples/")) {
 
 		String name=String(p_name).get_slice("/",1);
-		if(sample_map.has(name)) {
+    auto iter = sample_map.find(name);
+		if(iter != sample_map.end()) {
 			Dictionary d;
-			d["sample"]=sample_map[name].sample;
-			d["pitch"]=sample_map[name].pitch_scale;
-			d["db"]=sample_map[name].db;
+			d["sample"]=iter->second.sample;
+			d["pitch"]=iter->second.pitch_scale;
+			d["db"]=iter->second.db;
 			r_ret=d;
 		} else {
 			return false;
@@ -96,9 +97,10 @@ void SampleLibrary::add_sample(const StringName& p_name, const Ref<Sample>& p_sa
 
 Ref<Sample> SampleLibrary::get_sample(const StringName& p_name) const {
 
-	ERR_FAIL_COND_V(!sample_map.has(p_name),Ref<Sample>());
+  auto iter = sample_map.find(p_name);
+  ERR_FAIL_COND_V(iter == sample_map.end(),Ref<Sample>());
 
-	return sample_map[p_name].sample;
+	return iter->second.sample;
 }
 
 void SampleLibrary::remove_sample(const StringName& p_name) {
@@ -108,33 +110,33 @@ void SampleLibrary::remove_sample(const StringName& p_name) {
 
 void SampleLibrary::get_sample_list(List<StringName> *p_samples) {
 
-	for(Map<StringName,SampleData >::Element *E=sample_map.front();E;E=E->next()) {
+  for(auto& element : sample_map) {
 
-		p_samples->push_back(E->key());
+		p_samples->push_back(element.first);
 	}
 
 }
 
 bool SampleLibrary::has_sample(const StringName& p_name) const {
 
-	return sample_map.has(p_name);
+	return sample_map.find(p_name) != sample_map.end();
 }
 
 void SampleLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	for(Map<StringName,SampleData>::Element *E=sample_map.front();E;E=E->next()) {
+  for(auto& element : sample_map) {
 
-		p_list->push_back( PropertyInfo( Variant::DICTIONARY, "samples/"+E->key(),PROPERTY_HINT_RESOURCE_TYPE,"Sample",PROPERTY_USAGE_NOEDITOR ) );
+		p_list->push_back( PropertyInfo( Variant::DICTIONARY, "samples/"+element.first,PROPERTY_HINT_RESOURCE_TYPE,"Sample",PROPERTY_USAGE_NOEDITOR ) );
 	}
 }
 
 StringName SampleLibrary::get_sample_idx(int p_idx) const {
 
 	int idx=0;
-	for (Map<StringName, SampleData >::Element *E=sample_map.front();E;E=E->next()) {
+  for(auto& element : sample_map) {
 
 		if (p_idx==idx)
-			return E->key();
+			return element.first;
 		idx++;
 	}
 
@@ -143,30 +145,31 @@ StringName SampleLibrary::get_sample_idx(int p_idx) const {
 
 void SampleLibrary::sample_set_volume_db(const StringName& p_name, float p_db) {
 
-	ERR_FAIL_COND( !sample_map.has(p_name) );
-	sample_map[p_name].db=p_db;
+  auto iter = sample_map.find(p_name);
+	ERR_FAIL_COND(iter == sample_map.end());
+	iter->second.db=p_db;
 
 }
 
 float SampleLibrary::sample_get_volume_db(const StringName& p_name) const{
 
-	ERR_FAIL_COND_V( !sample_map.has(p_name),0 );
-
-	return sample_map[p_name].db;
+  auto iter = sample_map.find(p_name);
+	ERR_FAIL_COND_V(iter == sample_map.end(),0 );
+	return sample->second.db;
 }
 
 void SampleLibrary::sample_set_pitch_scale(const StringName& p_name, float p_pitch){
 
-	ERR_FAIL_COND( !sample_map.has(p_name) );
-
-	sample_map[p_name].pitch_scale=p_pitch;
+  auto iter = sample_map.find(p_name);
+	ERR_FAIL_COND(iter == sample_map.end());
+	iter->second.pitch_scale=p_pitch;
 }
 
 float SampleLibrary::sample_get_pitch_scale(const StringName& p_name) const{
 
-	ERR_FAIL_COND_V( !sample_map.has(p_name),0 );
-
-	return sample_map[p_name].pitch_scale;
+  auto iter = sample_map.find(p_name);
+	ERR_FAIL_COND_V(iter == sample_map.end(),0 );
+	return iter->second.pitch_scale;
 }
 
 
