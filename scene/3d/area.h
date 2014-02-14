@@ -29,6 +29,8 @@
 #ifndef AREA_H
 #define AREA_H
 
+#include <map>
+
 #include "scene/3d/collision_object.h"
 #include "vset.h"
 
@@ -80,7 +82,7 @@ private:
 		VSet<ShapePair> shapes;
 	};
 
-	Map<ObjectID,BodyState> body_map;
+  std::map<ObjectID,BodyState> body_map;
 	void _clear_monitoring();
 
 

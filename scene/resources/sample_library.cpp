@@ -155,7 +155,7 @@ float SampleLibrary::sample_get_volume_db(const StringName& p_name) const{
 
   auto iter = sample_map.find(p_name);
 	ERR_FAIL_COND_V(iter == sample_map.end(),0 );
-	return sample->second.db;
+	return iter->second.db;
 }
 
 void SampleLibrary::sample_set_pitch_scale(const StringName& p_name, float p_pitch){
